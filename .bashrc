@@ -189,6 +189,9 @@ if ! pgrep -u "$USER" ssh-agent > /dev/null; then
   eval "$(ssh-agent -s)"
 fi
 
+# Ensure SSH_AUTH_SOCK is set
+export SSH_AUTH_SOCK=$(find /tmp/ssh-*/agent.* -type s -print -quit)
+
 # Automatically add SSH key to agent
 ssh-add ~/.ssh/github </dev/null 2>/dev/null
 
