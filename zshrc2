@@ -2,40 +2,74 @@
 
 autoload -Uz promptinit
 promptinit
-prompt adam1
 
-setopt histignorealldups sharehistory
+# Set custom prompt after prompt adam1
+export PROMPT='-[%F{green}%D{%a %b %d-%H:%M:%S}%f]-[%F{yellow}%n%f@%F{red}%m%f]-
+-[%F{blue}%~%f]$ '
 
-# Use emacs keybindings even if our EDITOR is set to vi
+# Set the directory we want to store zinit and plugins
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+
+# Download Zinit, if it's not there yet
+if [ ! -d "$ZINIT_HOME" ]; then
+   mkdir -p "$(dirname $ZINIT_HOME)"
+   git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+
+# Source/Load zinit
+source "${ZINIT_HOME}/zinit.zsh"
+
+# Add in zsh plugins
+zinit light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-completions
+zinit light zsh-users/zsh-autosuggestions
+zinit light Aloxaf/fzf-tab
+
+# Add in snippets
+zinit snippet OMZL::git.zsh
+zinit snippet OMZP::git
+zinit snippet OMZP::sudo
+zinit snippet OMZP::command-not-found
+
+# Load completions
+autoload -Uz compinit && compinit
+
+zinit cdreplay -q
+
+# Keybindings
 bindkey -e
+bindkey '^p' history-search-backward
+bindkey '^n' history-search-forward
+bindkey '^[w' kill-region
 
-# Keep 1000 lines of history within the shell and save it to ~/.zsh_history:
-HISTSIZE=1000
-SAVEHIST=1000
+# History
+HISTSIZE=5000
 HISTFILE=~/.zsh_history
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
 
-# Use modern completion system
-autoload -Uz compinit
-compinit
+# Completion styling
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
-zstyle ':completion:*' auto-description 'specify: %d'
-zstyle ':completion:*' completer _expand _complete _correct _approximate
-zstyle ':completion:*' format 'Completing %d'
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' menu select=2
-eval "$(dircolors -b)"
-zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*' list-colors ''
-zstyle ':completion:*' list-prompt %SAt %p: Hit TAB for more, or the character to insert%s
-zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
-zstyle ':completion:*' menu select=long
-zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
-zstyle ':completion:*' use-compctl false
-zstyle ':completion:*' verbose true
+# Aliases
+alias ls='ls --color'
+alias vim='nvim'
+alias c='clear'
 
-zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
-zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+# fzf integration
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-export PROMPT='-[%F{green}%D{%a %b %d}%f-%T]-[%F{orange}%n@%m%f]-[%F{blue}%~%f]$ '
-
+# zoxide integration
+eval "$(zoxide init zsh)"
 
