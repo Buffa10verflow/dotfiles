@@ -184,6 +184,11 @@ fi
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+# Start SSH agent if it's not already running
+if ! pgrep -u "$USER" ssh-agent > /dev/null; then
+  eval "$(ssh-agent -s)"
+fi
+
 # Automatically add SSH key to agent
 ssh-add ~/.ssh/github </dev/null 2>/dev/null
 
