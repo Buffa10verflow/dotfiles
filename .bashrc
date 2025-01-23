@@ -180,12 +180,15 @@ if ! shopt -oq posix; then
 fi
 
 
-
+# Make sure $LANG is correct
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+# Automatically add SSH key to agent
+ssh-add ~/.ssh/github </dev/null 2>/dev/null
 
-
+# Set bash prompt to show date and time on its own line
+# This makes logging easier and can search each command by searching -
 export PS1="-[\[$(tput sgr0)\]\[\033[38;5;10m\]\d\[$(tput sgr0)\]-\[$(tput sgr0)\]\[\033[38;5;10m\]\t\[$(tput sgr0)\]]-[\[$(tput sgr0)\]\[\033[38;5;214m\]\u\[$(tput sgr0)\]@\[$(tput sgr0)\]\[\033[38;5;196m\]\h\[$(tput sgr0)\]]-\n-[\[$(tput sgr0)\]\[\033[38;5;33m\]\w\[$(tput sgr0)\]]\\$ \[$(tput sgr0)\]"
 
 # shellclear to check for sensitive data in my history
