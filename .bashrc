@@ -92,6 +92,69 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 
+# alias vim to nvim
+alias vim='nvim'
+
+# youtube-dl alias to download best video/audio format
+alias youtube-dl="yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'"
+
+#asciinema ascii2gif alias
+alias asciicast2gif='docker run --rm -v $PWD:/data asciinema/asciicast2gif'
+
+# alias to prevent my real IP from being leaked if openvpn drops unexpectedly. script immediately disables network interfaces through systemctl
+alias openvpn="openvpn --script-security 2 --down /opt/vpn-down.sh --config"
+
+# user agent alias to not get blocked by WAF
+export AGENTFIREFOX="Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+export AGENTSAFARI="AppleWebKit/537.36 (KHTML, like Gecko)"
+export AGENTCHROME="Chrome/87.0.4280.88 Safari/537.36"
+export AGENTBOT="Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+export AGENTOBVIOUS="X-Bug-Bounty: Penetration Tester"
+
+alias curl="curl -A '$AGENTBOT'"
+alias wget="wget -U '$AGENTBOT'"
+alias wpscan="wpscan --ua '$AGENTBOT'"
+alias nmap="grc nmap --script-args=\"http.useragent='$AGENTBOT'\""
+alias cheat.sh="cht.sh"
+
+# ffuf aliases by rez0
+ffuf_quick(){
+	dom=$(echo $1 | unfurl format %s%d)
+	ffuf -c -v -u $1/FUZZ -w /wordlists/contentdiscovery/directories_files/jhaddix_all.txt \
+	-H "$AGENTCHROME" \
+	-H "$AGENTOBVIOUS" -ac -mc all -o quick_$dom.csv \
+	-of csv $2 -maxtime 360 $3
+}
+
+ffuf_recursive(){
+  mkdir -p recursive
+  dom=$(echo $1 | unfurl format %s%d)
+  ffuf -c -v -u $1/FUZZ -w $2 -H "$AGENTCHROME" \
+  -H "$AGENTOBVIOUS" -recursion -recursion-depth 5 -mc all -ac \
+  -o recursive/recursive_$dom.csv -of csv $3
+}
+
+ffuf_vhost(){
+	dom=$(echo $1 | unfurl format %s%d)
+	ffuf -c -u $1 -H "Host: FUZZ" -w /opt/Seclists/Discovery/sortedcombined-knock-dnsrecon-fierce-reconng.txt \
+	-H "$AGENTBOT" -ac -mc all -fc 400,404 -o vhost_$dom.csv \
+	-of csv -maxtime 120
+}
+
+
+# nuclei aliases by rez0
+nuclei_site(){
+    echo $1 | nuclei -t cves/ -t exposures/tokens/ -t exposures/tokens/ \
+		-t exposures/tokens/ -t vulnerabilities/ -t fuzzing/ -t misconfiguration/ \
+		-t miscellaneous/dir-listing.yaml -stats -c 30
+}
+nuclei_file(){
+    nuclei -l $1 -t cves/ -t exposures/tokens/ -t exposures/tokens/ \
+		-t exposures/tokens/ -t vulnerabilities/ -t fuzzing/ -t misconfiguration/ \
+		-t miscellaneous/dir-listing.yaml -stats -c 50
+}
+
+
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
@@ -115,3 +178,15 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+
+
+
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+
+
+export PS1="-[\[$(tput sgr0)\]\[\033[38;5;10m\]\d\[$(tput sgr0)\]-\[$(tput sgr0)\]\[\033[38;5;10m\]\t\[$(tput sgr0)\]]-[\[$(tput sgr0)\]\[\033[38;5;214m\]\u\[$(tput sgr0)\]@\[$(tput sgr0)\]\[\033[38;5;196m\]\h\[$(tput sgr0)\]]-\n-[\[$(tput sgr0)\]\[\033[38;5;33m\]\w\[$(tput sgr0)\]]\\$ \[$(tput sgr0)\]"
+
+# shellclear to check for sensitive data in my history
+eval $(shellclear --init-shell)
